@@ -77,14 +77,22 @@
       animation: fadeInUp 1s ease-out 0.3s both;
     }
 
-    /* Ukelele SVG animado */
-    .uke-svg {
+    /* Logo video o SVG */
+    .logo-video, .uke-svg {
       width: clamp(120px, 25vw, 200px);
       margin-bottom: 16px;
       animation: fadeInUp 1s ease-out 0.15s both;
-      filter: drop-shadow(0 0 15px rgba(34, 211, 238, 0.5));
+    }
+    .logo-video {
+      filter: drop-shadow(0 0 15px rgba(255, 179, 71, 0.5));
+      border-radius: 12px;
+      object-fit: contain;
     }
 
+    /* SVG ukelele animado (fallback) */
+    .uke-svg {
+      filter: drop-shadow(0 0 15px rgba(34, 211, 238, 0.5));
+    }
     .uke-svg .body { animation: neonFlicker 4s ease-in-out infinite; }
     .uke-svg .neck { animation: neonFlicker2 4s ease-in-out infinite 0.5s; }
 
@@ -224,8 +232,12 @@
 
 <!-- Logo -->
 <div class="logo-container">
-  <!-- Ukelele SVG animado -->
-  <svg class="uke-svg" viewBox="0 0 100 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Video logo animado (si existe) o SVG fallback -->
+  <video class="logo-video" id="logoVideo" autoplay loop muted playsinline>
+    <source src="/assets/videos/logo_animado.mp4" type="video/mp4">
+  </video>
+  <!-- SVG ukelele animado (fallback si no hay video) -->
+  <svg class="uke-svg" id="logoSvg" viewBox="0 0 100 160" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none">
     <!-- Headstock -->
     <rect x="38" y="2" width="24" height="22" rx="4" stroke="#a855f7" stroke-width="2.5" class="neck" style="animation-delay:0.2s"/>
     <line x1="44" y1="6" x2="44" y2="20" stroke="#a855f7" stroke-width="1.5" class="neck"/>
@@ -257,9 +269,22 @@
   <p class="subtitle">Aprende · Practica · Crea</p>
 </div>
 
+<script>
+  // Mostrar SVG si video no carga
+  const video = document.getElementById('logoVideo');
+  const svg = document.getElementById('logoSvg');
+  video.addEventListener('error', () => {
+    video.style.display = 'none';
+    svg.style.display = 'block';
+  });
+  video.addEventListener('loadeddata', () => {
+    // Video OK, mostrar video
+  });
+</script>
+
 <!-- Botones -->
 <div class="buttons">
-  <a href="/app" class="btn btn-tablatura">
+  <a href="/tablatura" class="btn btn-tablatura">
     <span class="btn-icon">🎸</span>
     <span class="btn-label">Tablatura</span>
     <span class="btn-desc">Sincroniza audio<br>con tablatura</span>
