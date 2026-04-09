@@ -25,6 +25,9 @@ CREATE TABLE IF NOT EXISTS canciones (
     lyrics_with_chords TEXT,
     timestamps_json TEXT,
     observaciones TEXT,
+    tags VARCHAR(500) DEFAULT '',
+    has_tablatura BOOLEAN DEFAULT FALSE,
+    has_karaoke BOOLEAN DEFAULT FALSE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (nivel_id) REFERENCES niveles(id)

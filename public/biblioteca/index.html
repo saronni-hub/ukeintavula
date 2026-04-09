@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biblioteca - ukeintavula</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a0f; min-height: 100vh; color: #f8fafc; font-family: 'Poppins', sans-serif; }
+
+    header {
+      background: #12121a; border-bottom: 1px solid #2a2a3a;
+      padding: 14px 24px; display: flex; align-items: center;
+      justify-content: space-between; position: sticky; top: 0; z-index: 100;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-logo { font-size: 1rem; background: linear-gradient(135deg, #f97316, #ea580c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
+    .header-path { color: #64748b; font-size: 0.85rem; }
+    .btn-home { padding: 8px 16px; border-radius: 8px; border: 1px solid #2a2a3a; background: #1a1a2e; color: #94a3b8; cursor: pointer; font-size: 0.85rem; text-decoration: none; font-family: 'Poppins', sans-serif; }
+    .btn-home:hover { background: #2a2a3a; color: #f8fafc; }
+
+    .container { max-width: 1000px; margin: 0 auto; padding: 24px 20px; }
+
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .filters { display: flex; gap: 8px; }
+    .filter-btn { padding: 10px 20px; background: #1a1a2e; border: 1px solid #2a2a3a; border-radius: 10px; color: #94a3b8; cursor: pointer; font-weight: 600; font-family: 'Poppins', sans-serif; transition: all 0.2s; }
+    .filter-btn.active { background: #f97316; border-color: #f97316; color: #fff; }
+    .filter-btn:hover:not(.active) { background: #2a2a3a; color: #f8fafc; }
+    .btn-add { padding: 10px 20px; background: #22c55e; border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; font-family: 'Poppins', sans-serif; }
+    .btn-add:hover { background: #16a34a; }
+
+    .search-bar { margin-bottom: 24px; }
+    .search-input { width: 100%; padding: 14px 20px; background: #12121a; border: 2px solid #2a2a3a; border-radius: 14px; color: #f8fafc; font-size: 1rem; font-family: 'Poppins', sans-serif; outline: none; }
+    .search-input:focus { border-color: #f97316; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .card { background: #12121a; border: 1px solid #2a2a3a; border-radius: 16px; padding: 20px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 10px; }
+    .card:hover { border-color: #f9731680; transform: translateY(-3px); box-shadow: 0 12px 40px rgba(249,115,22,0.15); }
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    .card-title { font-size: 1.1rem; font-weight: 700; }
+    .card-artist { font-size: 0.85rem; color: #64748b; }
+    .card-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+    .badge-level { background: rgba(34,211,238,0.15); color: #22d3ee; border: 1px solid rgba(34,211,238,0.3); }
+    .badge-tablatura { background: rgba(34,211,238,0.15); color: #22d3ee; }
+    .badge-karaoke { background: rgba(249,115,22,0.15); color: #f97316; }
+    .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tag { padding: 2px 8px; background: #1a1a2e; border-radius: 6px; font-size: 0.7rem; color: #64748b; }
+    .card-actions { display: flex; gap: 8px; margin-top: auto; padding-top: 10px; border-top: 1px solid #2a2a3a; }
+    .btn-card { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; font-size: 0.85rem; }
+    .btn-play { background: #22d3ee; color: #0a0a0f; }
+    .btn-play:hover { background: #06b6d4; }
+    .btn-karaoke { background: #f97316; color: #fff; }
+    .btn-karaoke:hover { background: #ea580c; }
+    .btn-admin { background: #1a1a2e; color: #94a3b8; border: 1px solid #2a2a3a; }
+    .btn-admin:hover { background: #2a2a3a; color: #f8fafc; }
+
+    .empty { grid-column: 1 / -1; text-align: center; padding: 60px 20px; }
+    .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 4px; color: #64748b; }
+    .empty-desc { font-size: 0.85rem; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px; overflow-y: auto; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: #1a1a2e; border: 1px solid #2a2a3a; border-radius: 20px; padding: 28px; width: 100%; max-width: 500px; position: relative; max-height: 90vh; overflow-y: auto; }
+    .modal-close { position: absolute; top: 16px; right: 16px; background: #2a2a3a; border: none; border-radius: 50%; width: 36px; height: 36px; color: #94a3b8; cursor: pointer; font-size: 1.1rem; }
+    .modal-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 20px; color: #f97316; padding-right: 40px; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 0.82rem; color: #94a3b8; font-weight: 600; margin-bottom: 6px; }
+    .form-input, .form-textarea, .form-select { width: 100%; padding: 10px 14px; background: #12121a; border: 2px solid #2a2a3a; border-radius: 10px; color: #f8fafc; font-size: 0.9rem; font-family: 'Poppins', sans-serif; outline: none; }
+    .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: #f97316; }
+    .form-textarea { min-height: 80px; resize: vertical; }
+    .form-checkbox { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .form-checkbox input { width: 18px; height: 18px; accent-color: #f97316; }
+    .form-checkbox label { font-size: 0.85rem; color: #94a3b8; }
+    .upload-area { border: 2px dashed #2a2a3a; border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: border-color 0.2s; }
+    .upload-area:hover { border-color: #f97316; }
+    .upload-area input { display: none; }
+    .upload-icon { font-size: 1.5rem; margin-bottom: 8px; }
+    .upload-text { font-size: 0.85rem; color: #64748b; }
+    .upload-filename { color: #22c55e; font-weight: 600; margin-top: 8px; }
+
+    .btn-row { display: flex; gap: 12px; margin-top: 20px; }
+    .btn-cancel { flex: 1; padding: 12px; background: #2a2a3a; border: none; border-radius: 10px; color: #94a3b8; font-weight: 600; cursor: pointer; font-family: 'Poppins', sans-serif; }
+    .btn-submit { flex: 1; padding: 12px; background: #f97316; border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; font-family: 'Poppins', sans-serif; }
+    .btn-submit:hover { background: #ea580c; }
+    .btn-delete { padding: 12px; background: #dc2626; border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; font-family: 'Poppins', sans-serif; }
+
+    .admin-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.3); border-radius: 6px; font-size: 0.7rem; color: #f97316; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <a href="/" style="text-decoration:none"><span class="header-logo">🎵 ukeintavula</span></a>
+    <span class="header-path">/ Biblioteca</span>
+  </div>
+  <a href="/" class="btn-home">🏠 Inicio</a>
+</header>
+
+<div class="container">
+  <div class="toolbar">
+    <div class="filters">
+      <button class="filter-btn active" data-filter="all">Todas</button>
+      <button class="filter-btn" data-filter="tablatura">🎸 Tablatura</button>
+      <button class="filter-btn" data-filter="karaoke">🎤 Karaoke</button>
+    </div>
+    <button class="btn-add" id="addBtn">➕ Añadir</button>
+  </div>
+
+  <div class="search-bar">
+    <input type="text" class="search-input" id="searchInput" placeholder="Buscar por título, artista o tags...">
+  </div>
+
+  <div class="grid" id="songsGrid">
+    <div class="empty">
+      <div class="empty-icon">🎵</div>
+      <div class="empty-title">Cargando...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Form -->
+<div class="modal-overlay" id="formModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeFormModal()">✕</button>
+    <h2 class="modal-title" id="formTitle">➕ Añadir Canción</h2>
+    <form id="songForm">
+      <input type="hidden" id="formId">
+      <div class="form-group">
+        <label class="form-label">Título *</label>
+        <input type="text" class="form-input" id="formTitulo" required placeholder="Nombre de la canción">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Artista</label>
+        <input type="text" class="form-input" id="formArtista" placeholder="Autor o intérprete">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nivel</label>
+        <select class="form-select" id="formNivel"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tags (separados por coma)</label>
+        <input type="text" class="form-input" id="formTags" placeholder="navidad, fácil, popular">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Duración (segundos)</label>
+        <input type="number" class="form-input" id="formDuracion" value="180" min="0">
+      </div>
+      <div class="form-checkbox">
+        <input type="checkbox" id="formHasTablatura">
+        <label for="formHasTablatura">🎸 Tiene tablatura (MP3 + MusicXML)</label>
+      </div>
+      <div class="form-checkbox">
+        <input type="checkbox" id="formHasKaraoke">
+        <label for="formHasKaraoke">🎤 Tiene karaoke (YouTube)</label>
+      </div>
+      <div class="form-group">
+        <label class="form-label">YouTube URL</label>
+        <input type="url" class="form-input" id="formYoutube" placeholder="https://www.youtube.com/watch?v=...">
+      </div>
+      <div class="form-group" id="mp3UploadGroup">
+        <label class="form-label">Archivo MP3</label>
+        <div class="upload-area" onclick="document.getElementById('formMp3').click()">
+          <div class="upload-icon">🎵</div>
+          <div class="upload-text">Haz clic o arrastra el archivo MP3 aquí</div>
+          <div class="upload-filename" id="mp3Filename"></div>
+          <input type="file" id="formMp3" accept=".mp3,audio/mpeg">
+        </div>
+      </div>
+      <div class="form-group" id="xmlUploadGroup">
+        <label class="form-label">Archivo MusicXML</label>
+        <div class="upload-area" onclick="document.getElementById('formXml').click()">
+          <div class="upload-icon">🎼</div>
+          <div class="upload-text">Haz clic o arrastra el archivo MusicXML aquí</div>
+          <div class="upload-filename" id="xmlFilename"></div>
+          <input type="file" id="formXml" accept=".xml,.musicxml">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Observaciones</label>
+        <textarea class="form-textarea" id="formObservaciones" placeholder="Notas sobre la canción..."></textarea>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn-cancel" onclick="closeFormModal()">Cancelar</button>
+        <button type="submit" class="btn-submit" id="formSubmitBtn">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const API_BASE = '/api';
+let songs = [];
+let niveles = [];
+let currentFilter = 'all';
+let adminLogged = false;
+let editingSong = null;
+
+async function loadSongs() {
+  try {
+    const res = await fetch(API_BASE + '/biblioteca');
+    songs = await res.json();
+    renderSongs();
+  } catch (e) {
+    console.error('Error loading songs:', e);
+  }
+}
+
+async function loadNiveles() {
+  try {
+    const res = await fetch(API_BASE + '/niveles');
+    niveles = await res.json();
+    populateNivelSelect();
+  } catch (e) {
+    console.error('Error loading niveles:', e);
+  }
+}
+
+function populateNivelSelect() {
+  const select = document.getElementById('formNivel');
+  select.innerHTML = niveles.map(n => `<option value="${n.id}">${n.nombre}</option>`).join('');
+}
+
+function renderSongs() {
+  const grid = document.getElementById('songsGrid');
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  
+  let filtered = songs.filter(s => {
+    const matchSearch = !search || 
+      s.titulo.toLowerCase().includes(search) ||
+      (s.artista && s.artista.toLowerCase().includes(search)) ||
+      (s.tags && s.tags.toLowerCase().includes(search));
+    
+    if (currentFilter === 'all') return matchSearch;
+    if (currentFilter === 'tablatura') return matchSearch && s.has_tablatura;
+    if (currentFilter === 'karaoke') return matchSearch && s.has_karaoke;
+    return matchSearch;
+  });
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="empty"><div class="empty-icon">🎵</div><div class="empty-title">No hay canciones</div><div class="empty-desc">Usa el botón ➕ Añadir para crear una</div></div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(s => {
+    const tags = s.tags ? s.tags.split(',').map(t => t.trim()).filter(t => t) : [];
+    return `<div class="card" onclick="openSong(${s.id})">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${s.titulo}</div>
+          <div class="card-artist">${s.artista || 'Sin artista'}</div>
+        </div>
+        ${adminLogged ? `<span class="admin-badge" onclick="event.stopPropagation(); openEditForm(${s.id})">✏️ Editar</span>` : ''}
+      </div>
+      <div class="card-meta">
+        ${s.nivel_nombre ? `<span class="badge badge-level">${s.nivel_nombre}</span>` : ''}
+        ${s.has_tablatura ? '<span class="badge badge-tablatura">🎸 Tablatura</span>' : ''}
+        ${s.has_karaoke ? '<span class="badge badge-karaoke">🎤 Karaoke</span>' : ''}
+      </div>
+      ${tags.length > 0 ? `<div class="card-tags">${tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>` : ''}
+      <div class="card-actions">
+        ${s.has_tablatura ? `<button class="btn-card btn-play" onclick="event.stopPropagation(); goTablatura(${s.id})">🎸 Tablatura</button>` : ''}
+        ${s.has_karaoke ? `<button class="btn-card btn-karaoke" onclick="event.stopPropagation(); goKaraoke(${s.id})">🎤 Karaoke</button>` : ''}
+        ${(!s.has_tablatura && !s.has_karaoke) ? `<button class="btn-card btn-admin" onclick="event.stopPropagation(); openEditForm(${s.id})">✏️ Editar</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openSong(id) {
+  const s = songs.find(s => s.id === id);
+  if (!s) return;
+  if (s.has_karaoke) {
+    goKaraoke(id);
+  } else if (s.has_tablatura) {
+    goTablatura(id);
+  } else {
+    openEditForm(id);
+  }
+}
+
+function goTablatura(id) {
+  window.location.href = '/tablatura?id=' + id;
+}
+
+function goKaraoke(id) {
+  window.location.href = '/acordes?id=' + id;
+}
+
+function openEditForm(id) {
+  const s = songs.find(s => s.id === id);
+  if (!s) return;
+  editingSong = s;
+  document.getElementById('formId').value = s.id;
+  document.getElementById('formTitulo').value = s.titulo;
+  document.getElementById('formArtista').value = s.artista || '';
+  document.getElementById('formNivel').value = s.nivel_id || 1;
+  document.getElementById('formTags').value = s.tags || '';
+  document.getElementById('formDuracion').value = s.duracion || 180;
+  document.getElementById('formHasTablatura').checked = s.has_tablatura;
+  document.getElementById('formHasKaraoke').checked = s.has_karaoke;
+  document.getElementById('formYoutube').value = s.youtube_url || '';
+  document.getElementById('formObservaciones').value = s.observaciones || '';
+  document.getElementById('mp3Filename').textContent = s.archivo_mp3 ? '✓ ' + s.archivo_mp3.split('/').pop() : '';
+  document.getElementById('xmlFilename').textContent = s.archivo_xml ? '✓ ' + s.archivo_xml.split('/').pop() : '';
+  document.getElementById('formTitle').textContent = '✏️ Editar Canción';
+  document.getElementById('formSubmitBtn').textContent = 'Guardar cambios';
+  document.getElementById('formModal').classList.add('active');
+}
+
+function openAddForm() {
+  if (!adminLogged) {
+    const pw = prompt('Contraseña admin:');
+    if (pw !== 'more2000') {
+      alert('Contraseña incorrecta');
+      return;
+    }
+    adminLogged = true;
+  }
+  editingSong = null;
+  document.getElementById('formId').value = '';
+  document.getElementById('formTitulo').value = '';
+  document.getElementById('formArtista').value = '';
+  document.getElementById('formNivel').value = 1;
+  document.getElementById('formTags').value = '';
+  document.getElementById('formDuracion').value = 180;
+  document.getElementById('formHasTablatura').checked = false;
+  document.getElementById('formHasKaraoke').checked = false;
+  document.getElementById('formYoutube').value = '';
+  document.getElementById('formObservaciones').value = '';
+  document.getElementById('mp3Filename').textContent = '';
+  document.getElementById('xmlFilename').textContent = '';
+  document.getElementById('formTitle').textContent = '➕ Añadir Canción';
+  document.getElementById('formSubmitBtn').textContent = 'Guardar';
+  document.getElementById('formModal').classList.add('active');
+}
+
+function closeFormModal() {
+  document.getElementById('formModal').classList.remove('active');
+  editingSong = null;
+}
+
+document.getElementById('addBtn').addEventListener('click', openAddForm);
+
+document.getElementById('songForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const formData = new FormData();
+  formData.append('titulo', document.getElementById('formTitulo').value);
+  formData.append('artista', document.getElementById('formArtista').value);
+  formData.append('nivel_id', document.getElementById('formNivel').value);
+  formData.append('tags', document.getElementById('formTags').value);
+  formData.append('duracion', document.getElementById('formDuracion').value);
+  formData.append('has_tablatura', document.getElementById('formHasTablatura').checked);
+  formData.append('has_karaoke', document.getElementById('formHasKaraoke').checked);
+  formData.append('youtube_url', document.getElementById('formYoutube').value);
+  formData.append('observaciones', document.getElementById('formObservaciones').value);
+  
+  const mp3File = document.getElementById('formMp3').files[0];
+  const xmlFile = document.getElementById('formXml').files[0];
+  
+  if (mp3File) formData.append('mp3_file', mp3File);
+  if (xmlFile) formData.append('xml_file', xmlFile);
+  
+  if (editingSong) {
+    formData.append('id', editingSong.id);
+  }
+  
+  try {
+    const res = await fetch(API_BASE + '/upload-song', {
+      method: 'POST',
+      body: formData
+    });
+    const result = await res.json();
+    if (result.success) {
+      closeFormModal();
+      loadSongs();
+    } else {
+      alert('Error: ' + (result.message || 'Unknown error'));
+    }
+  } catch (err) {
+    alert('Error de conexión');
+  }
+});
+
+document.getElementById('formMp3').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  document.getElementById('mp3Filename').textContent = file ? '✓ ' + file.name : '';
+});
+
+document.getElementById('formXml').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  document.getElementById('xmlFilename').textContent = file ? '✓ ' + file.name : '';
+});
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderSongs();
+  });
+});
+
+document.getElementById('searchInput').addEventListener('input', renderSongs);
+
+// Init
+loadSongs();
+loadNiveles();
+</script>
+</body>
+</html>

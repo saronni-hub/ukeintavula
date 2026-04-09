@@ -36,10 +36,26 @@
     padding: 12px 24px; 
     display: flex; 
     align-items: center; 
-    gap: 20px; 
+    gap: 12px; 
     border-bottom: 1px solid #2a2a3a;
     flex-shrink: 0;
   }
+  .header-nav { display: flex; gap: 8px; }
+  .nav-btn {
+    padding: 8px 14px;
+    background: var(--bg-card);
+    border: 1px solid #2a2a3a;
+    border-radius: 8px;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    text-decoration: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { background: #2a2a3a; color: #f8fafc; }
+  .nav-btn.home { color: #f97316; border-color: rgba(249,115,22,0.3); }
+  .nav-btn.home:hover { background: rgba(249,115,22,0.15); }
   header h1 { 
     font-size: 1.4rem; 
     background: linear-gradient(135deg, var(--accent), var(--accent2));
@@ -47,11 +63,12 @@
     -webkit-text-fill-color: transparent;
     font-weight: 800;
     letter-spacing: -0.5px;
+    margin-left: 8px;
   }
+  .song-title { font-size: 0.9rem; color: #64748b; margin-left: auto; }
   .header-stats {
     display: flex;
     gap: 16px;
-    margin-left: auto;
   }
   .stat-badge {
     display: flex;
@@ -1079,9 +1096,12 @@
 
 <!-- HEADER -->
 <header>
+  <div class="header-nav">
+    <a href="/biblioteca?mode=tablatura" class="nav-btn">📚 Biblioteca</a>
+    <a href="/" class="nav-btn home">🏠 Inicio</a>
+  </div>
   <h1>🎵 UKEINTAVULA</h1>
-  <span class="mode-badge">Ukelele</span>
-  <button class="menu-btn" id="menu-btn">📚 Ejercicios</button>
+  <span class="song-title" id="songTitle"></span>
   <div class="header-stats">
     <div class="stat-badge">
       <span class="icon">🎯</span>
@@ -5021,8 +5041,99 @@ class ChordModeUI {
   }
 }
 
+// Load song from URL parameter
+async function loadSongFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const songId = params.get('id');
+  if (songId) {
+    try {
+      const res = await fetch('/api/songs/' + songId);
+      if (res.ok) {
+        const song = await res.json();
+        document.getElementById('songTitle').textContent = song.titulo + (song.artista ? ' - ' + song.artista : '');
+        if (song.archivo_mp3) {
+          // Load the audio file
+          const audioUrl = '/data' + song.archivo_mp3;
+          fetch(audioUrl)
+            .then(r => r.arrayBuffer())
+            .then(buf => {
+              audioEngine.loadAudio(buf);
+            })
+            .catch(e => console.log('Audio not found:', audioUrl));
+        }
+        if (song.archivo_xml) {
+          // Load the XML file for tablatura
+          fetch('/data' + song.archivo_xml)
+            .then(r => r.text())
+            .then(xml => {
+              // Parse and load tablatura
+              parseMusicXML(xml);
+            })
+            .catch(e => console.log('XML not found:', e));
+        }
+      }
+    } catch (e) {
+      console.log('Error loading song:', e);
+    }
+  }
+}
+
+// Simple MusicXML parser
+function parseMusicXML(xml) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xml, 'text/xml');
+  const notes = [];
+  const divisions = parseInt(doc.querySelector(' divisions')?.textContent) || 1;
+  const bpm = parseInt(doc.querySelector('metronome > beat-unit-quarter')?.textContent) || 120;
+  
+  document.querySelectorAll('note').forEach(note => {
+    const pitch = note.querySelector('pitch');
+    if (pitch) {
+      const step = pitch.querySelector('step')?.textContent;
+      const octave = parseInt(pitch.querySelector('octave')?.textContent);
+      const duration = parseFloat(note.querySelector('duration')?.textContent) || 0;
+      const timeStart = notes.length > 0 ? notes[notes.length - 1].timeStart + notes[notes.length - 1].duration : 0;
+      
+      let stringNum = 0;
+      let fret = 0;
+      
+      // Convert pitch to ukulele tablature (simplified)
+      const noteMap = { 'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11 };
+      const midiNote = noteMap[step] + (octave + 1) * 12;
+      
+      // Find best ukulele position (simplified - standard GCEA tuning)
+      const gceaMidi = [67, 60, 64, 69]; // G4, C4, E4, A4
+      let minDiff = Infinity;
+      for (let i = 0; i < 4; i++) {
+        const diff = Math.abs(midiNote - gceaMidi[i]);
+        if (diff < minDiff) {
+          minDiff = diff;
+          stringNum = i + 1;
+          fret = diff;
+        }
+      }
+      
+      notes.push({
+        timeStart: timeStart / divisions * 60 / bpm,
+        duration: duration / divisions * 60 / bpm,
+        string: stringNum,
+        fret: fret,
+        note: step + octave,
+        measure: 1
+      });
+    }
+  });
+  
+  if (notes.length > 0) {
+    visualizer.loadNotes(notes);
+    bucleEngine.setNotes(notes);
+    visualizer.setBPM(bpm);
+  }
+}
+
 // Init
 const chordModeUI = new ChordModeUI();
+loadSongFromUrl();
 
 // Add button to transport bar
 document.querySelector('.transport-buttons').insertAdjacentHTML('beforeend',

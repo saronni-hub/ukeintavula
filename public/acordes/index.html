@@ -132,7 +132,11 @@
     <a href="/" style="text-decoration:none"><span class="header-logo">🎵 ukeintavula</span></a>
     <span style="color:#334155;font-size:0.85rem">/ Karaoke</span>
   </div>
-  <button class="btn-back" onclick="showLibrary()">📚 Biblioteca</button>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span id="songTitle" style="color:#64748b;font-size:0.85rem;margin-right:8px"></span>
+    <a href="/biblioteca?mode=karaoke" class="btn-back">📚 Biblioteca</a>
+    <a href="/" class="btn-back" style="color:#f97316;border-color:rgba(249,115,22,0.3)">🏠 Inicio</a>
+  </div>
 </header>
 
 <!-- Modo Biblioteca -->
@@ -714,6 +718,46 @@ function showLRCPreview() {
 // ===== INIT =====
 songs = getSongs();
 renderSongs();
+
+// Load song from URL parameter
+async function loadSongFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const songId = params.get('id');
+  if (songId) {
+    try {
+      const res = await fetch('/api/songs/' + songId);
+      if (res.ok) {
+        const song = await res.json();
+        document.getElementById('songTitle').textContent = song.titulo + (song.artista ? ' - ' + song.artista : '');
+        
+        // Set YouTube URL if exists
+        if (song.youtube_url) {
+          document.getElementById('youtubeUrl').value = song.youtube_url;
+          loadYouTube();
+        }
+        
+        // Load timestamps if exists
+        if (song.timestamps_json) {
+          try {
+            timestamps = JSON.parse(song.timestamps_json);
+            renderTimestamps();
+            updateChordCarousel();
+          } catch (e) {
+            console.log('Error parsing timestamps:', e);
+          }
+        }
+        
+        // Show karaoke section
+        showKaraoke();
+      }
+    } catch (e) {
+      console.log('Error loading song:', e);
+    }
+  }
+}
+
+// Check URL params on load
+loadSongFromUrl();
 </script>
 </body>
 </html>
