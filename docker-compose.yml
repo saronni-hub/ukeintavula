@@ -9,6 +9,7 @@ services:
       MYSQL_PASSWORD: mi_password_user_456
     volumes:
       - db_data:/var/lib/mysql
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
