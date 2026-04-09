@@ -3,13 +3,12 @@ services:
     image: mariadb:10.11
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: mi_password_root_123
+      MYSQL_DATABASE: ukesync_db
+      MYSQL_USER: ukesync_user
+      MYSQL_PASSWORD: mi_password_user_456
     volumes:
       - db_data:/var/lib/mysql
-      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
@@ -17,25 +16,22 @@ services:
       retries: 5
 
   api:
-    build: ./docker/python
+    image: saronni/ukeintavula-api:latest
     restart: unless-stopped
     ports:
       - "3001:3001"
     environment:
       DB_HOST: mariadb
       DB_PORT: 3306
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      ADMIN_PASS: ${ADMIN_PASS:-more2000}
+      DB_NAME: ukesync_db
+      DB_USER: ukesync_user
+      DB_PASSWORD: mi_password_user_456
+      ADMIN_PASS: more2000
+      SERVE_DIR: /app/public
+      CACHE_DIR: /tmp/ukesync_cache
     volumes:
       - ./data:/app/data
       - ./public:/app/public
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:3001/api/biblioteca')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
     depends_on:
       mariadb:
         condition: service_healthy
