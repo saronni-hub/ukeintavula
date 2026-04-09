@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎸 ukeintavula</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #050508;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Poppins', sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Fondo con estrellas */
+    .stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 2s ease-in-out infinite;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+
+    /* Logo principal */
+    .logo-container {
+      position: relative;
+      margin-bottom: 50px;
+      animation: fadeInUp 1s ease-out;
+    }
+
+    .uke-title {
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      font-weight: 900;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      background: linear-gradient(180deg, #ffb347 0%, #ff6b35 50%, #ffb347 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 10px rgba(255, 179, 71, 0.8));
+      animation: glowPulse 3s ease-in-out infinite;
+      position: relative;
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 179, 71, 0.6)); }
+      50% { filter: drop-shadow(0 0 25px rgba(255, 179, 71, 1)); }
+    }
+
+    /* Subtítulo */
+    .subtitle {
+      color: #64748b;
+      font-size: 0.9rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      text-align: center;
+      margin-top: 8px;
+      animation: fadeInUp 1s ease-out 0.3s both;
+    }
+
+    /* Ukelele SVG animado */
+    .uke-svg {
+      width: clamp(120px, 25vw, 200px);
+      margin-bottom: 16px;
+      animation: fadeInUp 1s ease-out 0.15s both;
+      filter: drop-shadow(0 0 15px rgba(34, 211, 238, 0.5));
+    }
+
+    .uke-svg .body { animation: neonFlicker 4s ease-in-out infinite; }
+    .uke-svg .neck { animation: neonFlicker2 4s ease-in-out infinite 0.5s; }
+
+    @keyframes neonFlicker {
+      0%, 100% { stroke: #22d3ee; filter: drop-shadow(0 0 8px #22d3ee); }
+      50% { stroke: #67e8f9; filter: drop-shadow(0 0 15px #22d3ee); }
+      52% { stroke: #06b6d4; filter: drop-shadow(0 0 5px #22d3ee); }
+      54% { stroke: #22d3ee; filter: drop-shadow(0 0 12px #22d3ee); }
+    }
+    @keyframes neonFlicker2 {
+      0%, 100% { stroke: #a855f7; filter: drop-shadow(0 0 8px #a855f7); }
+      50% { stroke: #c084fc; filter: drop-shadow(0 0 15px #a855f7); }
+    }
+
+    /* Notas musicales flotantes */
+    .notes {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .note {
+      position: absolute;
+      font-size: 1.5rem;
+      animation: floatUp linear infinite;
+      opacity: 0;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.7; }
+      90% { opacity: 0.7; }
+      100% { transform: translateY(-10vh) rotate(20deg); opacity: 0; }
+    }
+
+    /* Botones */
+    .buttons {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeInUp 1s ease-out 0.6s both;
+    }
+
+    .btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: clamp(140px, 35vw, 180px);
+      height: clamp(140px, 35vw, 180px);
+      border-radius: 24px;
+      text-decoration: none;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      padding: 2px;
+      background: linear-gradient(135deg, var(--c1), var(--c2));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+    }
+
+    .btn-tablatura {
+      --c1: #22d3ee;
+      --c2: #06b6d4;
+      background: rgba(34, 211, 238, 0.08);
+      color: #22d3ee;
+    }
+    .btn-tablatura:hover {
+      background: rgba(34, 211, 238, 0.18);
+      transform: translateY(-8px) scale(1.05);
+      box-shadow: 0 20px 60px rgba(34, 211, 238, 0.3);
+    }
+
+    .btn-acordes {
+      --c1: #f97316;
+      --c2: #ea580c;
+      background: rgba(249, 115, 22, 0.08);
+      color: #f97316;
+    }
+    .btn-acordes:hover {
+      background: rgba(249, 115, 22, 0.18);
+      transform: translateY(-8px) scale(1.05);
+      box-shadow: 0 20px 60px rgba(249, 115, 22, 0.3);
+    }
+
+    .btn-icon { font-size: 2.8rem; margin-bottom: 10px; }
+    .btn-label { font-size: 1rem; font-weight: 700; }
+    .btn-desc { font-size: 0.7rem; opacity: 0.6; margin-top: 4px; text-align: center; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Footer */
+    .footer {
+      position: fixed;
+      bottom: 16px;
+      color: #1e293b;
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Admin link */
+    .admin-link {
+      position: fixed;
+      bottom: 16px;
+      right: 20px;
+      color: #334155;
+      font-size: 0.7rem;
+      text-decoration: none;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+    }
+    .admin-link:hover { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<!-- Estrellas de fondo -->
+<div class="stars" id="stars"></div>
+
+<!-- Notas flotantes -->
+<div class="notes" id="notes"></div>
+
+<!-- Logo -->
+<div class="logo-container">
+  <!-- Ukelele SVG animado -->
+  <svg class="uke-svg" viewBox="0 0 100 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Headstock -->
+    <rect x="38" y="2" width="24" height="22" rx="4" stroke="#a855f7" stroke-width="2.5" class="neck" style="animation-delay:0.2s"/>
+    <line x1="44" y1="6" x2="44" y2="20" stroke="#a855f7" stroke-width="1.5" class="neck"/>
+    <line x1="56" y1="6" x2="56" y2="20" stroke="#a855f7" stroke-width="1.5" class="neck"/>
+    <!-- Tuners -->
+    <circle cx="40" cy="8" r="3" stroke="#f97316" stroke-width="1.5"/>
+    <circle cx="60" cy="8" r="3" stroke="#f97316" stroke-width="1.5"/>
+    <!-- Neck -->
+    <rect x="42" y="24" width="16" height="60" rx="2" stroke="#22d3ee" stroke-width="2" class="neck"/>
+    <!-- Frets -->
+    <line x1="42" y1="36" x2="58" y2="36" stroke="#1e293b" stroke-width="1"/>
+    <line x1="42" y1="48" x2="58" y2="48" stroke="#1e293b" stroke-width="1"/>
+    <line x1="42" y1="60" x2="58" y2="60" stroke="#1e293b" stroke-width="1"/>
+    <line x1="42" y1="72" x2="58" y2="72" stroke="#1e293b" stroke-width="1"/>
+    <!-- Body -->
+    <ellipse cx="50" cy="118" rx="38" ry="40" stroke="#22d3ee" stroke-width="2.5" class="body"/>
+    <!-- Sound hole -->
+    <circle cx="50" cy="115" r="14" stroke="#a855f7" stroke-width="2" class="body"/>
+    <!-- Bridge -->
+    <rect x="36" y="140" width="28" height="6" rx="3" stroke="#22d3ee" stroke-width="2" class="body"/>
+    <!-- Strings -->
+    <line x1="44" y1="24" x2="40" y2="142" stroke="#22d3ee" stroke-width="0.8" opacity="0.7"/>
+    <line x1="48" y1="24" x2="46" y2="142" stroke="#22d3ee" stroke-width="0.8" opacity="0.7"/>
+    <line x1="52" y1="24" x2="54" y2="142" stroke="#22d3ee" stroke-width="0.8" opacity="0.7"/>
+    <line x1="56" y1="24" x2="60" y2="142" stroke="#22d3ee" stroke-width="0.8" opacity="0.7"/>
+  </svg>
+
+  <h1 class="uke-title">ukeintavula</h1>
+  <p class="subtitle">Aprende · Practica · Crea</p>
+</div>
+
+<!-- Botones -->
+<div class="buttons">
+  <a href="/app" class="btn btn-tablatura">
+    <span class="btn-icon">🎸</span>
+    <span class="btn-label">Tablatura</span>
+    <span class="btn-desc">Sincroniza audio<br>con tablatura</span>
+  </a>
+  <a href="/acordes" class="btn btn-acordes">
+    <span class="btn-icon">🎵</span>
+    <span class="btn-label">Acordes</span>
+    <span class="btn-desc">Biblioteca de<br>acordes y letras</span>
+  </a>
+</div>
+
+<div class="footer">intavula © 2026</div>
+<a href="/admin.html" class="admin-link">Admin 🔒</a>
+
+<script>
+  // Estrellas
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 60; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 100 + '%';
+    s.style.animationDelay = Math.random() * 3 + 's';
+    s.style.width = s.style.height = (Math.random() * 2 + 1) + 'px';
+    starsEl.appendChild(s);
+  }
+
+  // Notas flotantes
+  const notesEl = document.getElementById('notes');
+  const noteChars = ['♪', '♫', '♬', '♩', '🎵', '🎶'];
+  const colors = ['#22d3ee', '#a855f7', '#f97316', '#22c55e', '#eab308'];
+  function createNote() {
+    const n = document.createElement('div');
+    n.className = 'note';
+    n.textContent = noteChars[Math.floor(Math.random() * noteChars.length)];
+    n.style.left = Math.random() * 95 + '%';
+    n.style.color = colors[Math.floor(Math.random() * colors.length)];
+    n.style.fontSize = (Math.random() * 1.2 + 0.8) + 'rem';
+    n.style.animationDuration = (Math.random() * 8 + 8) + 's';
+    n.style.animationDelay = Math.random() * 5 + 's';
+    notesEl.appendChild(n);
+    setTimeout(() => n.remove(), 20000);
+  }
+  for (let i = 0; i < 8; i++) setTimeout(createNote, i * 1000);
+  setInterval(createNote, 3000);
+</script>
+</body>
+</html>

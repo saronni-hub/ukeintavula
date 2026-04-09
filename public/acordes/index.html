@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acordes - ukeintavula</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a0f; min-height: 100vh; color: #f8fafc; font-family: 'Poppins', sans-serif; }
+
+    header {
+      background: #12121a; border-bottom: 1px solid #2a2a3a;
+      padding: 14px 24px; display: flex; align-items: center;
+      justify-content: space-between; position: sticky; top: 0; z-index: 100;
+    }
+    .header-logo {
+      font-size: 1rem; background: linear-gradient(135deg, #f97316, #ea580c);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800;
+    }
+    .btn-header {
+      padding: 8px 16px; border-radius: 8px; border: 1px solid #2a2a3a;
+      background: #1a1a2e; color: #94a3b8; cursor: pointer;
+      font-size: 0.85rem; font-family: 'Poppins', sans-serif; transition: all 0.2s;
+    }
+    .btn-header:hover { background: #2a2a3a; color: #f8fafc; }
+    .btn-admin { background: rgba(249,115,22,0.15); border-color: rgba(249,115,22,0.3); color: #f97316; }
+    .btn-admin:hover { background: rgba(249,115,22,0.25); }
+
+    .search-bar { max-width: 600px; margin: 24px auto; padding: 0 20px; }
+    .search-input {
+      width: 100%; padding: 14px 20px; background: #12121a;
+      border: 2px solid #2a2a3a; border-radius: 14px; color: #f8fafc;
+      font-size: 1rem; font-family: 'Poppins', sans-serif; outline: none;
+    }
+    .search-input:focus { border-color: #f97316; }
+    .search-input::placeholder { color: #475569; }
+
+    .grid { max-width: 900px; margin: 0 auto; padding: 0 20px 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+
+    .card {
+      background: #12121a; border: 1px solid #2a2a3a; border-radius: 16px;
+      padding: 20px; cursor: pointer; transition: all 0.2s;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .card:hover { border-color: #f9731680; transform: translateY(-3px); box-shadow: 0 12px 40px rgba(249,115,22,0.15); }
+    .card-title { font-size: 1rem; font-weight: 700; }
+    .card-artist { font-size: 0.82rem; color: #64748b; }
+    .card-genre { display: inline-block; padding: 3px 10px; background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.25); border-radius: 20px; font-size: 0.7rem; color: #f97316; width: fit-content; }
+    .card-chords { font-size: 0.8rem; color: #94a3b8; font-family: monospace; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .empty { grid-column: 1 / -1; text-align: center; padding: 60px 20px; }
+    .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 4px; color: #64748b; }
+    .empty-desc { font-size: 0.85rem; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
+    .modal { background: #1a1a2e; border: 1px solid #2a2a3a; border-radius: 20px; padding: 28px; max-width: 650px; width: 100%; max-height: 85vh; overflow-y: auto; position: relative; }
+    .modal-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 20px; color: #f97316; padding-right: 40px; }
+    .chord-block { margin-bottom: 20px; }
+    .chord-line { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; font-size: 1rem; line-height: 2; }
+    .chord-mark { background: rgba(249,115,22,0.2); border: 1px solid rgba(249,115,22,0.4); border-radius: 6px; padding: 2px 10px; font-weight: 700; color: #f97316; font-size: 0.85rem; height: fit-content; }
+    .lyric-text { color: #94a3b8; white-space: pre-wrap; }
+    .modal-close { position: absolute; top: 16px; right: 16px; background: #2a2a3a; border: none; border-radius: 50%; width: 36px; height: 36px; color: #94a3b8; cursor: pointer; font-size: 1.1rem; }
+
+    .admin-form { display: flex; flex-direction: column; gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font-size: 0.82rem; color: #94a3b8; font-weight: 600; }
+    .form-input, .form-textarea { padding: 10px 14px; background: #12121a; border: 2px solid #2a2a3a; border-radius: 10px; color: #f8fafc; font-size: 0.9rem; font-family: 'Poppins', sans-serif; outline: none; }
+    .form-textarea { min-height: 120px; resize: vertical; }
+    .btn-submit { padding: 12px; background: #f97316; border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; font-size: 0.95rem; font-family: 'Poppins', sans-serif; }
+    .btn-submit:hover { background: #ea580c; }
+    .btn-delete { padding: 6px 12px; background: #dc2626; border: none; border-radius: 8px; color: #fff; font-size: 0.8rem; cursor: pointer; font-family: 'Poppins', sans-serif; }
+    .song-list-admin { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+    .song-admin-item { display: flex; justify-content: space-between; align-items: center; background: #12121a; border-radius: 10px; padding: 12px 16px; border: 1px solid #2a2a3a; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:12px">
+    <a href="/" style="text-decoration:none"><span class="header-logo">🎵 ukeintavula</span></a>
+    <span style="color:#334155;font-size:0.85rem">/ Acordes</span>
+  </div>
+  <button class="btn-header btn-admin" id="adminBtn" onclick="openAdmin()">🔒 Admin</button>
+</header>
+
+<div class="search-bar">
+  <input type="text" class="search-input" placeholder="Buscar canción, artista..." id="searchInput" oninput="filterSongs()">
+</div>
+
+<div class="grid" id="songGrid"></div>
+
+<!-- Modal canción -->
+<div class="modal-overlay" id="songModal" style="display:none">
+  <div class="modal">
+    <button class="modal-close" onclick="closeSongModal()">✕</button>
+    <h2 class="modal-title" id="modalTitle"></h2>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<!-- Modal Admin -->
+<div class="modal-overlay" id="adminModal" style="display:none">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAdmin()">✕</button>
+    <h2 class="modal-title">🔒 Zona Admin</h2>
+    <div id="adminContent"></div>
+  </div>
+</div>
+
+<script>
+const SONGS_KEY = 'uke_acordes_v1';
+let songs = [];
+let adminLogged = false;
+
+function getSongs() {
+  try { return JSON.parse(localStorage.getItem(SONGS_KEY)) || []; } catch(e) { return []; }
+}
+function saveSongsToStorage(s) {
+  localStorage.setItem(SONGS_KEY, JSON.stringify(s));
+  songs = s;
+  renderSongs();
+}
+
+function renderSongs(filter) {
+  filter = filter || '';
+  const grid = document.getElementById('songGrid');
+  const filtered = songs.filter(function(s) {
+    return !filter || s.titulo.toLowerCase().indexOf(filter.toLowerCase()) !== -1 ||
+           s.artista.toLowerCase().indexOf(filter.toLowerCase()) !== -1;
+  });
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="empty"><div class="empty-icon">🎵</div><div class="empty-title">No hay canciones</div><div class="empty-desc">Usa Admin para añadir canciones</div></div>';
+    return;
+  }
+  var html = '';
+  filtered.forEach(function(s) {
+    var chords = (s.versos || []).slice(0,2).map(function(v) { return v.acordes.join(' '); }).join(' · ');
+    var genre = s.genero ? '<span class="card-genre">' + s.genero + '</span>' : '';
+    html += '<div class="card" onclick="openSong(' + s.id + ')">' +
+      '<div class="card-title">' + s.titulo + '</div>' +
+      '<div class="card-artist">' + s.artista + '</div>' + genre +
+      '<div class="card-chords">' + chords + '</div></div>';
+  });
+  grid.innerHTML = html;
+}
+
+function filterSongs() {
+  renderSongs(document.getElementById('searchInput').value);
+}
+
+function openSong(id) {
+  var s = null;
+  for (var i = 0; i < songs.length; i++) { if (songs[i].id === id) { s = songs[i]; break; } }
+  if (!s) return;
+  document.getElementById('modalTitle').textContent = s.titulo + ' — ' + s.artista;
+  var html = '';
+  (s.versos || []).forEach(function(verso) {
+    html += '<div class="chord-block">';
+    var line = verso.letra;
+    var result = '';
+    var i = 0;
+    while (i < line.length) {
+      if (line[i] === '[') {
+        var close = line.indexOf(']', i);
+        if (close === -1) { result += line[i]; i++; continue; }
+        var chord = line.substring(i+1, close);
+        result += '<span class="chord-mark">' + chord + '</span>';
+        i = close + 1;
+      } else {
+        result += '<span class="lyric-text">' + line[i] + '</span>';
+        i++;
+      }
+    }
+    html += '<div class="chord-line">' + result + '</div></div>';
+  });
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('songModal').style.display = 'flex';
+}
+
+function closeSongModal() { document.getElementById('songModal').style.display = 'none'; }
+
+function openAdmin() {
+  if (!adminLogged) {
+    var pw = prompt('Contraseña admin:');
+    if (pw !== 'more2000') { alert('Incorrecta'); return; }
+    adminLogged = true;
+  }
+  var html = '<div class="admin-form">' +
+    '<div class="form-group"><label class="form-label">Título</label><input class="form-input" id="newTitulo" placeholder="Nombre de la canción"></div>' +
+    '<div class="form-group"><label class="form-label">Artista</label><input class="form-input" id="newArtista" placeholder="Autor/intérprete"></div>' +
+    '<div class="form-group"><label class="form-label">Género (opcional)</label><input class="form-input" id="newGenero" placeholder="Ej: Pop, Flamenco, Ranchera"></div>' +
+    '<div class="form-group"><label class="form-label">Letra con acordes entre [corchetes]</label><textarea class="form-textarea" id="newVersos" placeholder="[Am]Primera[G]línea aquí\n[F]Segunda[Am]línea más"></textarea></div>' +
+    '<button class="btn-submit" onclick="addSong()">➕ Añadir canción</button></div>';
+  if (songs.length > 0) {
+    html += '<div class="song-list-admin"><h3 style="color:#64748b;font-size:0.9rem;margin-bottom:8px">Canciones guardadas</h3>';
+    songs.forEach(function(s) {
+      html += '<div class="song-admin-item"><div><div style="font-weight:600">' + s.titulo + '</div><div style="font-size:0.75rem;color:#64748b">' + s.artista + '</div></div><button class="btn-delete" onclick="deleteSong(' + s.id + ')">🗑</button></div>';
+    });
+    html += '</div>';
+  }
+  document.getElementById('adminContent').innerHTML = html;
+  document.getElementById('adminModal').style.display = 'flex';
+}
+
+function addSong() {
+  var titulo = document.getElementById('newTitulo').value.trim();
+  var artista = document.getElementById('newArtista').value.trim();
+  var genero = document.getElementById('newGenero').value.trim();
+  var raw = document.getElementById('newVersos').value.trim();
+  if (!titulo || !artista || !raw) { alert('Título, artista y letra son obligatorios'); return; }
+  var versos = raw.split('\n').filter(function(l) { return l.trim(); }).map(function(line) {
+    var acordes = [];
+    var letra = line.replace(/\[([^\]]+)\]/g, function(m, c) { acordes.push(c); return ''; }).trim();
+    return { acordes: acordes, letra: letra };
+  });
+  var s = { id: Date.now(), titulo: titulo, artista: artista, genero: genero, versos: versos };
+  saveSongsToStorage(songs.concat([s]));
+  document.getElementById('newTitulo').value = '';
+  document.getElementById('newArtista').value = '';
+  document.getElementById('newGenero').value = '';
+  document.getElementById('newVersos').value = '';
+  openAdmin();
+}
+
+function deleteSong(id) {
+  if (!confirm('¿Eliminar esta canción?')) return;
+  var filtered = [];
+  for (var i = 0; i < songs.length; i++) { if (songs[i].id !== id) filtered.push(songs[i]); }
+  saveSongsToStorage(filtered);
+  openAdmin();
+}
+
+function closeAdmin() { document.getElementById('adminModal').style.display = 'none'; }
+
+// Init
+songs = getSongs();
+renderSongs();
+</script>
+</body>
+</html>

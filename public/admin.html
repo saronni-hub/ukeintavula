@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎛️ Administración UKEINTAVULA</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #1a1a2e; color: #fff; min-height: 100vh; padding: 20px; }
+        h1 { color: #06C; margin-bottom: 20px; text-align: center; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .card { background: #16213e; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+        .card h2 { color: #0f9; margin-bottom: 16px; font-size: 18px; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; color: #aaa; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #0f0f23; color: #fff; font-size: 16px; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #06C; }
+        input[type="file"] { background: #0f0f23; padding: 10px; }
+        .file-hint { font-size: 12px; color: #666; margin-top: 4px; }
+        .row { display: flex; gap: 16px; }
+        .row .form-group { flex: 1; }
+        button { background: #06C; color: #fff; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        button:hover { background: #0055aa; }
+        button:disabled { background: #555; cursor: not-allowed; }
+        .btn-danger { background: #c00; }
+        .btn-danger:hover { background: #a00; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
+        th { color: #0f9; }
+        .msg { padding: 12px; border-radius: 8px; margin-bottom: 16px; }
+        .msg-success { background: #0a3; }
+        .msg-error { background: #c00; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #06C; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .upload-area { border: 2px dashed #333; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: border-color 0.2s; }
+        .upload-area:hover { border-color: #06C; }
+        .upload-area input { display: none; }
+        .upload-icon { font-size: 32px; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Volver a UKEINTAVULA</a>
+        
+        <h1>🎛️ Administración</h1>
+        
+        <div class="card">
+            <h2>➕ Añadir Nueva Canción</h2>
+            <form id="addForm">
+                <div class="row">
+                    <div class="form-group">
+                        <label>Título *</label>
+                        <input type="text" id="titulo" required placeholder="Nombre de la canción">
+                    </div>
+                    <div class="form-group">
+                        <label>Artista</label>
+                        <input type="text" id="artista" placeholder="Autor o grupo">
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label>Nivel *</label>
+                        <select id="nivel_id" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Duración (segundos)</label>
+                        <input type="number" id="duracion" value="180" min="0">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>URL YouTube (opcional)</label>
+                    <input type="url" id="youtube_url" placeholder="https://www.youtube.com/watch?v=...">
+                </div>
+                
+                <div class="form-group">
+                    <label>📁 Archivo MP3</label>
+                    <div class="upload-area" onclick="document.getElementById('mp3_file').click()">
+                        <div class="upload-icon">🎵</div>
+                        <div id="mp3_name">Haz clic o arrastra el archivo MP3 aquí</div>
+                        <input type="file" id="mp3_file" accept=".mp3,audio/mpeg" onchange="handleFileSelect(this, 'mp3_name')">
+                    </div>
+                    <div class="file-hint">Sube el archivo MP3 de la canción (máx. 50MB)</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>📁 Archivo MusicXML (tablatura)</label>
+                    <div class="upload-area" onclick="document.getElementById('xml_file').click()">
+                        <div class="upload-icon">🎼</div>
+                        <div id="xml_name">Haz clic o arrastra el archivo MusicXML aquí</div>
+                        <input type="file" id="xml_file" accept=".xml,.musicxml,.mxl" onchange="handleFileSelect(this, 'xml_name')">
+                    </div>
+                    <div class="file-hint">Sube el archivo MusicXML con la tablatura (opcional)</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <textarea id="observaciones" rows="3" placeholder="Notas sobre la canción, acordes, etc."></textarea>
+                </div>
+                
+                <button type="submit" id="btnAdd">➕ Añadir Canción</button>
+            </form>
+            <div id="addMsg"></div>
+        </div>
+        
+        <div class="card">
+            <h2>📚 Canciones en la Biblioteca</h2>
+            <div id="songsList">Cargando...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let niveles = [];
+        
+        function handleFileSelect(input, displayId) {
+            const display = document.getElementById(displayId);
+            if (input.files && input.files[0]) {
+                display.textContent = '✅ ' + input.files[0].name;
+            }
+        }
+        
+        async function loadNiveles() {
+            const res = await fetch(API_BASE + '/niveles');
+            niveles = await res.json();
+            const select = document.getElementById('nivel_id');
+            select.innerHTML = niveles.map(n => `<option value="${n.id}">${n.nombre}</option>`).join('');
+        }
+        
+        async function loadSongs() {
+            const res = await fetch(API_BASE + '/library/full');
+            const data = await res.json();
+            const songs = data.canciones || [];
+            const div = document.getElementById('songsList');
+            if (songs.length === 0) {
+                div.innerHTML = '<p style="color:#aaa">No hay canciones en la biblioteca.</p>';
+                return;
+            }
+            div.innerHTML = `<table>
+                <tr><th>Título</th><th>Artista</th><th>Nivel</th><th>MP3</th><th>XML</th><th>Acciones</th></tr>
+                ${songs.map(s => `<tr>
+                    <td>${s.titulo}</td>
+                    <td>${s.artista || '-'}</td>
+                    <td>${s.nivel_nombre}</td>
+                    <td>${s.archivo_mp3 && s.archivo_mp3 !== 'NULL' ? '🎵' : '❌'}</td>
+                    <td>${s.archivo_xml && s.archivo_xml !== 'NULL' ? '🎼' : '❌'}</td>
+                    <td><button class="btn-danger" onclick="deleteSong(${s.id})">🗑️</button></td>
+                </tr>`).join('')}
+            </table>`;
+        }
+        
+        async function addSong(titulo, artista, nivel_id, youtube_url, duracion, observaciones, mp3File, xmlFile) {
+            const formData = new FormData();
+            formData.append('titulo', titulo);
+            formData.append('artista', artista);
+            formData.append('nivel_id', nivel_id);
+            formData.append('youtube_url', youtube_url);
+            formData.append('duracion', duracion);
+            formData.append('observaciones', observaciones);
+            if (mp3File) formData.append('mp3', mp3File);
+            if (xmlFile) formData.append('xml', xmlFile);
+            
+            const res = await fetch(API_BASE + '/admin/add', {
+                method: 'POST',
+                body: formData
+            });
+            return res.json();
+        }
+        
+        async function deleteSong(id) {
+            if (!confirm('¿Eliminar esta canción?')) return;
+            const res = await fetch(API_BASE + '/admin/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            const result = await res.json();
+            showMsg(result.success ? '✅ Canción eliminada' : '❌ Error: ' + result.error, !result.success);
+            if (result.success) loadSongs();
+        }
+        
+        function showMsg(text, isError) {
+            const div = document.getElementById('addMsg');
+            div.className = 'msg ' + (isError ? 'msg-error' : 'msg-success');
+            div.textContent = text;
+            setTimeout(() => div.innerHTML = '', 4000);
+        }
+        
+        document.getElementById('addForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnAdd');
+            btn.disabled = true;
+            btn.textContent = '⏳ Subiendo...';
+            
+            const titulo = document.getElementById('titulo').value;
+            const artista = document.getElementById('artista').value;
+            const nivel_id = document.getElementById('nivel_id').value;
+            const youtube_url = document.getElementById('youtube_url').value;
+            const duracion = parseInt(document.getElementById('duracion').value) || 180;
+            const observaciones = document.getElementById('observaciones').value;
+            const mp3File = document.getElementById('mp3_file').files[0];
+            const xmlFile = document.getElementById('xml_file').files[0];
+            
+            try {
+                const result = await addSong(titulo, artista, nivel_id, youtube_url, duracion, observaciones, mp3File, xmlFile);
+                if (result.success) {
+                    showMsg('✅ Canción añadida: ' + titulo, false);
+                    document.getElementById('addForm').reset();
+                    document.getElementById('duracion').value = '180';
+                    document.getElementById('mp3_name').textContent = 'Haz clic o arrastra el archivo MP3 aquí';
+                    document.getElementById('xml_name').textContent = 'Haz clic o arrastra el archivo MusicXML aquí';
+                    loadSongs();
+                } else {
+                    showMsg('❌ Error: ' + (result.error || 'Desconocido'), true);
+                }
+            } catch (err) {
+                showMsg('❌ Error de conexión', true);
+            }
+            
+            btn.disabled = false;
+            btn.textContent = '➕ Añadir Canción';
+        });
+        
+        loadNiveles();
+        loadSongs();
+    </script>
+</body>
+</html>
